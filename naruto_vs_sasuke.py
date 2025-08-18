@@ -9,13 +9,14 @@ from PIL import Image
 
 # ================== Configuration ==================
 BASE_DIR = r"C:\Users\rasan\OneDrive\Desktop\NarutoGame"
-SPRITESHEET_PATH_NARUTO = os.path.join(BASE_DIR, "sprites", "sheet.png")
-SPRITESHEET_PATH_SASUKE = os.path.join(BASE_DIR, "sprites", "sheet2.png")
-SOUNDS_DIR = os.path.join(BASE_DIR, "sounds")
-MAP_IMAGE_DIR = BASE_DIR
+ASSET_DIR = os.path.join(BASE_DIR, "asset")
+SPRITESHEET_PATH_NARUTO = os.path.join(ASSET_DIR, "sprites", "sheet.png")
+SPRITESHEET_PATH_SASUKE = os.path.join(ASSET_DIR, "sprites", "sheet2.png")
+SOUNDS_DIR = os.path.join(ASSET_DIR, "sounds")
+MAP_IMAGE_DIR = ASSET_DIR
 
 # 🔥 Fireball images folder (expects image0.png ... image76.png)
-FIREBALL_DIR = os.path.join(BASE_DIR, "fireball")
+FIREBALL_DIR = os.path.join(ASSET_DIR, "fireball")
 
 # Runtime scale (you can change during play with +/-)
 INITIAL_SCALE = 2.0
@@ -39,7 +40,7 @@ pygame.init()
 
 # ================== Background Music ==================
 def play_background_music():
-    music_path = os.path.join(BASE_DIR, "game_music.mp3")
+    music_path = os.path.join(ASSET_DIR, "game_music.mp3")
     if os.path.isfile(music_path):
         try:
             pygame.mixer.music.load(music_path)
