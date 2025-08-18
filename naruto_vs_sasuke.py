@@ -8,7 +8,7 @@ from time import time
 from PIL import Image
 
 # ================== Configuration ==================
-BASE_DIR = r"C:\Users\rasan\OneDrive\Desktop\NarutoGame"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSET_DIR = os.path.join(BASE_DIR, "asset")
 SPRITESHEET_PATH_NARUTO = os.path.join(ASSET_DIR, "sprites", "sheet.png")
 SPRITESHEET_PATH_SASUKE = os.path.join(ASSET_DIR, "sprites", "sheet2.png")
@@ -19,7 +19,7 @@ MAP_IMAGE_DIR = ASSET_DIR
 FIREBALL_DIR = os.path.join(ASSET_DIR, "fireball")
 
 # Runtime scale (you can change during play with +/-)
-INITIAL_SCALE = 2.0
+INITIAL_SCALE = 1.0
 
 # Animation names (used when sheet provides multiple rows; for autoscan we put all frames into "idle")
 ANIM_NAMES = ["idle", "walk", "attack", "jump"]
