@@ -96,7 +96,7 @@ python naruto_vs_sasuke.py
 | Team Member | Registration No. | Index No. | Contribution |
 |-------------|------------------|-----------|--------------|
 | 1          | ICT/2022/001    | 5609    | Game logic, character movement, and collision detection |
-| 2          | ICT/2022/008    | 56     | Audio integration, sound effects, and background music |
+| 2          | ICT/2022/008    | 5616     | Audio integration, sound effects, and background music |
 | 3          | ICT/2022/050    | 5656     | Sprite animation, image processing, and scaling features |
 | 4          | ICT/2022/120    | 5722    | User interface, map selection, and health bar implementation |
 | 5          | ICT/2022/113    | 5715    | Projectile mechanics, fireball animation, and testing |
