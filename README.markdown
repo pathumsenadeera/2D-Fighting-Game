@@ -11,7 +11,7 @@ Naruto vs Sasuke is an interactive 2D fighting game developed using Python and t
 - Provide an engaging application that highlights real-time multimedia processing.
 
 ### Target Users
-This game targets anime enthusiasts, particularly fans of the Naruto series, as well as students and developers interested in game development and multimedia applications. It serves as an educational tool for understanding Pygame and basic game mechanics.
+This game targets anime enthusiasts, particularly fans of the Naruto series, as well as students and developers interested in game development and multimedia applications.
 
 ### Technology Stack
 - Programming Language: Python 3.12.3
