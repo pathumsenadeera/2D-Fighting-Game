@@ -15,7 +15,7 @@ SPRITESHEET_PATH_SASUKE = os.path.join(ASSET_DIR, "sprites", "sheet2.png")
 SOUNDS_DIR = os.path.join(ASSET_DIR, "sounds")
 MAP_IMAGE_DIR = ASSET_DIR
 
-# 🔥 Fireball images folder (expects image0.png ... image76.png)
+# Fireball images folder
 FIREBALL_DIR = os.path.join(ASSET_DIR, "fireball")
 
 # Runtime scale (you can change during play with +/-)
