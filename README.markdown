@@ -1,4 +1,4 @@
-# Naruto vs Sasuke: A Multimedia Fighting Game
+# Naruto vs Sasuke: A 2d Multimedia Fighting Game
 
 ## Project Overview
 
@@ -116,7 +116,7 @@ Through this project, we mastered multimedia concepts such as audio playback, im
 
 ## Potential Improvements
 - Add multiplayer over network.
-- Include more characters and power-ups.
+- Include more characters and level-ups.
 - Implement AI for single-player mode.
 - Enhance graphics with particle effects.
 
