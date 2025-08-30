@@ -101,7 +101,6 @@ python naruto_vs_sasuke.py
 | 4          | ICT/2022/113   | 5715    | User interface, map selection, and health bar implementation |
 | 5          | ICT/2022/120   | 5722  | Projectile mechanics, fireball animation, and testing |
 
-(Replace placeholders with actual group member details.)
 
 ## Challenges and Solutions
 - **Challenge**: Dynamic asset loading across different systems.
