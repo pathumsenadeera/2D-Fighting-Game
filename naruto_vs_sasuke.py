@@ -1,4 +1,3 @@
-# naruto_vs_sasuke.py
 import pygame
 import numpy as np
 import os
@@ -33,7 +32,6 @@ BULLET_SPEED = 14
 BULLET_DAMAGE = 12
 SHOOT_COOLDOWN_FRAMES = 18  # ~3 shots/sec at 60 fps
 
-
 # ================== Pygame init ==================
 pygame.mixer.pre_init(44100, -16, 2, 1024)
 pygame.init()
@@ -67,7 +65,7 @@ def create_sound(freq=440, duration=0.1, vol=0.5):
     sample_rate = 44100
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
     wave = vol * np.sin(2 * np.pi * freq * t)
-    decay = np.linspace(1.0, 0.1, wave.size)
+    decay = np.linspace(1.0,0.1, wave.size)
     wave *= decay
     stereo = np.column_stack((wave, wave))
     arr = (stereo * 32767).astype(np.int16)
@@ -111,6 +109,17 @@ if len(map_images) == 0:
     map_images = None
     print("No map images found — using color backgrounds.")
 map_colors = [(34,139,34), (139,69,19), (128,128,128)]
+
+# ================== Map Selection Background ==================
+map_select_bg = None
+map_select_bg_path = os.path.join(ASSET_DIR, "map_select_bg.png")
+if os.path.isfile(map_select_bg_path):
+    try:
+        img = pygame.image.load(map_select_bg_path).convert()
+        map_select_bg = pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        print("Loaded map selection background.")
+    except Exception as e:
+        print("Failed to load map selection background:", e)
 
 # ================== Sheet loading helpers ==================
 def pil_to_surface_alpha(img: Image.Image) -> pygame.Surface:
@@ -284,7 +293,6 @@ class Bullet:
         if fireball_frames:
             self.frame_idx = (self.frame_idx + 1) % len(fireball_frames)
         else:
-            # keep incrementing harmlessly
             self.frame_idx = (self.frame_idx + 1) % 1
 
     def offscreen(self):
@@ -499,20 +507,123 @@ def draw_leaderboard():
         text = font.render(f"{i+1}. {entry['name']} - {entry['time']}s", True, WHITE)
         screen.blit(text, (SCREEN_WIDTH//2 - 100, 100 + i*28))
 
-# ================== Map Selection ==================
+# ================== Menu System ==================
+class Button:
+    def __init__(self, text, x, y, w, h, callback, font_size=36):
+        self.text = text
+        self.rect = pygame.Rect(x, y, w, h)
+        self.callback = callback
+        self.font = pygame.font.SysFont(None, font_size)
+
+    def draw(self, surface, hover=False):
+        color = (200,200,200) if hover else (255,255,255)
+        pygame.draw.rect(surface, (50,50,50), self.rect, border_radius=12)
+        pygame.draw.rect(surface, color, self.rect, 2, border_radius=12)
+        text = self.font.render(self.text, True, color)
+        surface.blit(text, (self.rect.centerx - text.get_width()//2,
+                            self.rect.centery - text.get_height()//2))
+
+    def check_click(self, pos):
+        if self.rect.collidepoint(pos):
+            try:
+                self.callback()
+            except Exception as e:
+                print("Button callback error:", e)
+
+def set_state(state):
+    global game_state
+    game_state = state
+
+def start_game(): set_state("map_selection")
+def show_controls(): set_state("controls")
+def resume_game(): set_state("playing")
+def quit_game():
+    try:
+        pygame.quit()
+    finally:
+        sys.exit(0)
+
+# Map selection helpers
 maps = ["Forest", "Village", "Arena"]
 selected_map = None
-def draw_map_selection():
+
+def map_item_rect(i):
+    return pygame.Rect(SCREEN_WIDTH//2 - 120, 140 + i*90, 240, 64)
+
+# Buttons
+start_buttons = [
+    Button("Start", SCREEN_WIDTH//2 - 100, 250, 200, 60, start_game),
+    Button("Controls", SCREEN_WIDTH//2 - 100, 350, 200, 60, show_controls),
+    Button("Quit", SCREEN_WIDTH//2 - 100, 450, 200, 60, quit_game),
+]
+back_btn = Button("Back", SCREEN_WIDTH//2 - 60, SCREEN_HEIGHT - 100, 120, 50, lambda: set_state("start_menu"))
+pause_buttons = [
+    Button("Resume", SCREEN_WIDTH//2 - 100, 250, 200, 60, resume_game),
+    Button("Back to Menu", SCREEN_WIDTH//2 - 100, 350, 200, 60, lambda: set_state("start_menu")),
+]
+
+# Screens
+def draw_start_menu():
     screen.fill(BLACK)
+    title_font = pygame.font.SysFont(None, 64)
+    title = title_font.render("Naruto vs Sasuke", True, WHITE)
+    screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 90))
+    for btn in start_buttons:
+        hover = btn.rect.collidepoint(pygame.mouse.get_pos())
+        btn.draw(screen, hover)
+
+def draw_controls_screen():
+    screen.fill(BLACK)
+    font = pygame.font.SysFont(None, 32)
+    lines = [
+        "Controls:",
+        "Naruto: Arrows, melee=Down, SHOOT=Right Ctrl",
+        "Sasuke: WASD, melee=S, SHOOT=Left Ctrl",
+        "+/- resize, P to pause, R to restart after KO",
+        "Select map with mouse.",
+    ]
+    for i, line in enumerate(lines):
+        text = font.render(line, True, WHITE)
+        screen.blit(text, (50, 120 + i*40))
+    hover = back_btn.rect.collidepoint(pygame.mouse.get_pos())
+    back_btn.draw(screen, hover)
+
+def draw_map_selection():
+    if map_select_bg:
+        screen.blit(map_select_bg, (0, 0))
+    else:
+        screen.fill(BLACK)
+
     font = pygame.font.SysFont(None, 36)
-    title = font.render("Select Map (1-3) then ENTER to Start", True, WHITE)
-    screen.blit(title, (SCREEN_WIDTH//2 - 260, 40))
+    title = font.render("Select a Map", True, WHITE)
+    screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 40))
+
     for i, m in enumerate(maps):
+        rect = map_item_rect(i)
         color = GREEN if selected_map == i else WHITE
-        text = font.render(f"{i+1}. {m}", True, color)
-        screen.blit(text, (SCREEN_WIDTH//2 - 100, 140 + i*46))
-    hint = font.render("Controls: Naruto=Arrows+RightCtrl shoot | Sasuke=WASD+LeftCtrl shoot | +/- resize", True, WHITE)
-    screen.blit(hint, (SCREEN_WIDTH//2 - 360, SCREEN_HEIGHT - 60))
+        pygame.draw.rect(screen, (50, 50, 50), rect, border_radius=12)
+        pygame.draw.rect(screen, color, rect, 2, border_radius=12)
+        text = font.render(m, True, color)
+        screen.blit(text, (rect.centerx - text.get_width()//2,
+                           rect.centery - text.get_height()//2))
+
+    hint = font.render("Click a map to start playing", True, WHITE)
+    screen.blit(hint, (SCREEN_WIDTH//2 - hint.get_width()//2, SCREEN_HEIGHT - 60))
+    
+    # Draw Back button
+    hover = back_btn.rect.collidepoint(pygame.mouse.get_pos())
+    back_btn.draw(screen, hover)
+
+def draw_pause_menu():
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    overlay.fill((0,0,0,180))
+    screen.blit(overlay, (0,0))
+    font = pygame.font.SysFont(None, 48)
+    title = font.render("Paused", True, WHITE)
+    screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 150))
+    for btn in pause_buttons:
+        hover = btn.rect.collidepoint(pygame.mouse.get_pos())
+        btn.draw(screen, hover)
 
 # ================== Instantiate Characters ==================
 GROUND_Y = SCREEN_HEIGHT - 20  # feet a bit above bottom
@@ -531,14 +642,14 @@ sasuke = Character(650, GROUND_Y, "Sasuke", {
 clock = pygame.time.Clock()
 FPS = 60
 game_over = False
-game_state = "map_selection"
+game_state = "start_menu"  # first screen
 running = True
 winner = ""
 
 print("Controls:")
 print("  Naruto: Arrows, melee=Down, SHOOT=Right Ctrl")
 print("  Sasuke: WASD, melee=S, SHOOT=Left Ctrl")
-print("  Select map with 1-3 then ENTER. +/- to resize, R to restart after KO.")
+print("  Flow: Start Menu -> Map Selection (mouse) -> Play. +/- to resize, P to pause, R to restart after KO.")
 
 def rescale_both():
     global naruto_animations, sasuke_animations, fireball_frames
@@ -554,42 +665,80 @@ try:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN:
+
+            # Mouse clicks for menus
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if game_state == "start_menu":
+                    for btn in start_buttons:
+                        btn.check_click(event.pos)
+                elif game_state == "controls":
+                    back_btn.check_click(event.pos)
+                elif game_state == "map_selection":
+                    # Choose a map by clicking; then go to playing
+                    for i in range(len(maps)):
+                        if map_item_rect(i).collidepoint(event.pos):
+                            selected_map = i
+                            game_state = "playing"
+                    back_btn.check_click(event.pos)
+                elif game_state == "paused":
+                    for btn in pause_buttons:
+                        btn.check_click(event.pos)
+
+            # Keys (resize, pause, and restart)
+            if event.type == pygame.KEYDOWN:
                 # Resize
                 if event.key in (pygame.K_KP_PLUS,) or getattr(event, "unicode", "") == "+":
-                    runtime_scale = min(4.0, round(runtime_scale + 0.1, 2))
+                    runtime_scale = min(4.0, round(INITIAL_SCALE if 'runtime_scale' not in globals() else runtime_scale + 0.1, 2))
                     rescale_both()
                     print(f"Scale -> {runtime_scale:.2f}")
                 elif event.key in (pygame.K_KP_MINUS,) or getattr(event, "unicode", "") == "-":
-                    runtime_scale = max(0.5, round(runtime_scale - 0.1, 2))
+                    runtime_scale = max(0.5, round(INITIAL_SCALE if 'runtime_scale' not in globals() else runtime_scale - 0.1, 2))
                     rescale_both()
                     print(f"Scale -> {runtime_scale:.2f}")
+                # Pause
+                elif event.key == pygame.K_p and game_state == "playing" and not game_over:
+                    game_state = "paused"
+                elif event.key == pygame.K_p and game_state == "paused":
+                    game_state = "playing"
+                # Restart after KO
+                elif game_state == "playing" and game_over and event.key == pygame.K_r:
+                    naruto.health = sasuke.health = 100
+                    naruto.midbottom_x, naruto.midbottom_y = (150, GROUND_Y)
+                    sasuke.midbottom_x, sasuke.midbottom_y = (650, GROUND_Y)
+                    naruto.vy = sasuke.vy = 0
+                    naruto.is_jumping = sasuke.is_jumping = False
+                    naruto.is_attacking = sasuke.is_attacking = False
+                    naruto.attack_cooldown = sasuke.attack_cooldown = 0
+                    naruto.shoot_cooldown = sasuke.shoot_cooldown = 0
+                    bullets.clear()
+                    rescale_both()
+                    game_over = False
+                    game_state = "map_selection"
+                    selected_map = None
+                    winner = ""
 
-                if game_state == "map_selection":
-                    if event.key == pygame.K_1: selected_map = 0
-                    elif event.key == pygame.K_2: selected_map = 1
-                    elif event.key == pygame.K_3: selected_map = 2
-                    elif event.key == pygame.K_RETURN and selected_map is not None:
-                        game_state = "playing"
-                elif game_state == "playing" and game_over:
-                    if event.key == pygame.K_r:
-                        naruto.health = sasuke.health = 100
-                        naruto.midbottom_x, naruto.midbottom_y = (150, GROUND_Y)
-                        sasuke.midbottom_x, sasuke.midbottom_y = (650, GROUND_Y)
-                        naruto.vy = sasuke.vy = 0
-                        naruto.is_jumping = sasuke.is_jumping = False
-                        naruto.is_attacking = sasuke.is_attacking = False
-                        naruto.attack_cooldown = sasuke.attack_cooldown = 0
-                        naruto.shoot_cooldown = sasuke.shoot_cooldown = 0
-                        bullets.clear()
-                        rescale_both()
-                        game_over = False
-                        game_state = "map_selection"
-                        selected_map = None
-                        winner = ""
+        # ====== State-specific update & draw ======
+        if game_state == "start_menu":
+            draw_start_menu()
 
-        if game_state == "map_selection":
+        elif game_state == "controls":
+            draw_controls_screen()
+
+        elif game_state == "map_selection":
             draw_map_selection()
+
+        elif game_state == "paused":
+            if map_images and selected_map is not None and selected_map < len(map_images):
+                screen.blit(map_images[selected_map], (0, 0))
+            else:
+                screen.fill(map_colors[selected_map] if selected_map is not None else WHITE)
+            naruto.draw(screen)
+            sasuke.draw(screen)
+            for bullet in bullets:
+                bullet.draw(screen)
+            draw_health_bar(50, 20, naruto.health)
+            draw_health_bar(SCREEN_WIDTH-150, 20, sasuke.health)
+            draw_pause_menu()
 
         elif game_state == "playing":
             if not game_over:
@@ -667,7 +816,6 @@ try:
                 winner_text = font.render(f"{winner} Wins! Press R to Restart", True, WHITE)
                 screen.blit(winner_text, (SCREEN_WIDTH//2 - 240, SCREEN_HEIGHT//2 - 20))
                 draw_leaderboard()
-
         pygame.display.flip()
         clock.tick(FPS)
 
