@@ -112,6 +112,17 @@ if len(map_images) == 0:
     print("No map images found — using color backgrounds.")
 map_colors = [(34,139,34), (139,69,19), (128,128,128)]
 
+# ================== Map Selection Background ==================
+map_select_bg = None
+map_select_bg_path = os.path.join(ASSET_DIR, "map_select_bg.png")
+if os.path.isfile(map_select_bg_path):
+    try:
+        img = pygame.image.load(map_select_bg_path).convert()
+        map_select_bg = pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        print("Loaded map selection background.")
+    except Exception as e:
+        print("Failed to load map selection background:", e)
+
 # ================== Sheet loading helpers ==================
 def pil_to_surface_alpha(img: Image.Image) -> pygame.Surface:
     if img.mode != "RGBA":
@@ -503,14 +514,20 @@ def draw_leaderboard():
 maps = ["Forest", "Village", "Arena"]
 selected_map = None
 def draw_map_selection():
-    screen.fill(BLACK)
+    if map_select_bg:
+        screen.blit(map_select_bg, (0, 0))
+    else:
+        screen.fill(BLACK)  # fallback if no background image
+
     font = pygame.font.SysFont(None, 36)
     title = font.render("Select Map (1-3) then ENTER to Start", True, WHITE)
     screen.blit(title, (SCREEN_WIDTH//2 - 260, 40))
+
     for i, m in enumerate(maps):
         color = GREEN if selected_map == i else WHITE
         text = font.render(f"{i+1}. {m}", True, color)
         screen.blit(text, (SCREEN_WIDTH//2 - 100, 140 + i*46))
+
     hint = font.render("Controls: Naruto=Arrows+RightCtrl shoot | Sasuke=WASD+LeftCtrl shoot | +/- resize", True, WHITE)
     screen.blit(hint, (SCREEN_WIDTH//2 - 360, SCREEN_HEIGHT - 60))
 
